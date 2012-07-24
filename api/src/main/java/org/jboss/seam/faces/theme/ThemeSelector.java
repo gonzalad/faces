@@ -20,6 +20,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.inject.Produces;
+import javax.faces.component.UIViewRoot;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
@@ -230,7 +231,7 @@ public class ThemeSelector implements Serializable {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         String messageBundle = facesContext.getApplication().getMessageBundle();
         if (messageBundle != null) {
-            Locale locale = facesContext.getViewRoot().getLocale();
+            Locale locale = getLocale(facesContext);
             try {
                 ResourceBundle resourceBundle = ResourceBundle.getBundle(messageBundle, locale);
                 return resourceBundle.getString(key);
@@ -248,7 +249,7 @@ public class ThemeSelector implements Serializable {
         try {
             ResourceBundle bundle = ResourceBundle.getBundle(
                     theme,
-                    FacesContext.getCurrentInstance().getViewRoot().getLocale(),
+                    getLocale(FacesContext.getCurrentInstance()),
                     Thread.currentThread().getContextClassLoader()
             );
             log.trace("loaded resource bundle: " + theme);
@@ -269,6 +270,14 @@ public class ThemeSelector implements Serializable {
                 }
             };
         }
+    }
+
+    /**
+     * Returns user locale
+     */
+    private Locale getLocale(FacesContext facesContext) {
+        UIViewRoot viewRoot = facesContext.getViewRoot();
+        return (viewRoot != null ? viewRoot.getLocale() : facesContext.getExternalContext().getRequestLocale());
     }
 
     private static class IteratorEnumeration implements Enumeration {
